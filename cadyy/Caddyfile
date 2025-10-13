@@ -1,0 +1,7 @@
+tropik-shoes.duckdns.org {
+    reverse_proxy mini_shop:5000
+    log {
+        output file /var/log/caddy/access.log
+    }
+    encode zstd gzip
+}

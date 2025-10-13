@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Tropik Shoes 97 — Panier</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    /* Fixer la navbar et la sidebar */
+    #topbar {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1030;
+    }
+    
+    .sidebar-card {
+      position: fixed;
+      top: 70px;
+      left: 0;
+      height: calc(100vh - 70px);
+      overflow-y: auto;
+      width: 25%;
+      z-index: 1020;
+    }
+    
+    .main-content {
+      margin-left: 25%;
+      margin-top: 70px;
+      padding: 20px;
+      width: 75%;
+    }
+
+    /* Styles pour les sections de la sidebar */
+    .sidebar-section {
+      display: none;
+    }
+    
+    .sidebar-section.active {
+      display: block;
+    }
+    
+    .sidebar-section-item {
+      padding: 8px 12px;
+      border-bottom: 1px solid #eee;
+      transition: background-color 0.2s;
+    }
+    
+    .sidebar-section-item:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .sidebar-section-item a {
+      text-decoration: none;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .sidebar-section-item img {
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+    
+    .sidebar-section-item .item-name {
+      flex: 1;
+      font-size: 0.9rem;
+    }
+
+    /* Logo dans la navbar - AGRANDI */
+    .navbar-logo {
+      height: 60px;
+      margin-right: 15px;
+    }
+
+    /* Icônes réseaux sociaux - REDIMENSIONNÉES */
+    .social-icons {
+      display: flex;
+      gap: 10px;
+      margin-left: 15px;
+      align-items: center;
+    }
+    
+    .social-icon-img {
+      width: 32px;
+      height: 32px;
+      transition: transform 0.2s;
+      object-fit: contain;
+    }
+    
+    .social-icon-img:hover {
+      transform: scale(1.1);
+    }
+
+    /* Styles pour le panier */
+    .cart-item {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      background: white;
+    }
+    
+    .cart-item-image {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+    
+    .cart-summary {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar-card {
+        position: relative;
+        width: 100%;
+        height: auto;
+        top: 0;
+      }
+      
+      .main-content {
+        margin-left: 0;
+        width: 100%;
+      }
+      
+      .social-icons {
+        margin-left: 10px;
+        gap: 5px;
+      }
+      
+      .social-icon-img {
+        width: 28px;
+        height: 28px;
+      }
+      
+      .navbar-logo {
+        height: 45px;
+        margin-right: 10px;
+      }
+      
+      .cart-item-image {
+        width: 60px;
+        height: 60px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg bg-dark navbar-dark" id="topbar">
+    <div class="container-fluid">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('home') }}">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Tropik Shoes 97" class="navbar-logo">
+        <div>
+          <div class="brand-title">
+            • Ventes de sneakers à bas prix !
+          </br>
+            • Livraison Gratuite - DOM TOM & France 🚚
+          </div>
+        </div>
+      </a>
+
+      <!-- Barre de recherche et réseaux sociaux -->
+      <div class="d-flex align-items-center" style="flex: 1; max-width: 600px;">
+        <form class="d-flex w-100 me-3" method="GET" action="{{ url_for('search') }}">
+          <div class="input-group">
+            <input type="search" name="q" class="form-control" placeholder="Rechercher un produit..." 
+                   value="{{ request.args.get('q', '') }}" aria-label="Rechercher">
+            <button class="btn btn-outline-light" type="submit">🔍</button>
+          </div>
+        </form>
+
+        <div class="brand-title">
+          Contact: 
+        </div>
+
+        <!-- Icônes Instagram et WhatsApp -->
+        <div class="social-icons">
+          <a href="https://www.instagram.com/tropik.shoes.97?utm_source=ig_web_button_share_sheet&igsh=MWZjbjBhcHZ3enRmeg==" target="_blank" title="Instagram">
+            <img src="{{ url_for('static', filename='instagram.png') }}" alt="Instagram" class="social-icon-img">
+          </a>
+          <a href="https://api.whatsapp.com/message/V6OEAU2ZXJAFD1?autoload=1&app_absent=0" target="_blank" title="WhatsApp">
+            <img src="{{ url_for('static', filename='whatsapp.png') }}" alt="WhatsApp" class="social-icon-img">
+          </a>
+        </div>
+
+        <!-- Bouton Panier entre les réseaux sociaux et le profil -->
+        {% if user_id %}
+          <a class="btn btn-outline-light ms-2" href="{{ url_for('cart_view') }}">
+            🛒 Panier ({{ cart_count }})
+          </a>
+        {% endif %}
+      </div>
+
+      <div class="ms-auto d-flex align-items-center gap-2">
+        {% if user_id %}
+          <div class="dropdown">
+            <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+              👤 {{ user_email }}
+            </button>
+            <ul class="dropdown-menu">
+              <li><span class="dropdown-item-text small text-muted">Connecté en tant que {{ user_email }}</span></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="{{ url_for('manage_address') }}">📦 Adresse de livraison</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="{{ url_for('cart_view') }}">🛒 Panier ({{ cart_count }})</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('logout') }}">🚪 Déconnexion</a></li>
+            </ul>
+          </div>
+        {% else %}
+          <a class="btn btn-outline-light" href="{{ url_for('login') }}">Connexion</a>
+          <a class="btn btn-outline-light" href="{{ url_for('register') }}">Inscription</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-fluid">
+    <div class="row">
+      <!-- SIDEBAR -->
+      <aside class="col-md-3">
+        <div class="card p-3 sidebar-card">
+          <!-- Nouveau système de sections dans la sidebar -->
+          <h6 class="mt-3">Sections rapides</h6>
+          
+          <!-- Boutons de filtrage des sections -->
+          <div class="btn-group w-100 mb-3" role="group" aria-label="Filtrer les sections">
+            <button type="button" class="btn btn-outline-secondary btn-sm sidebar-section-toggle active" data-target="all">Tous</button>
+            {% for key, items in sections.items() %}
+              <button type="button" class="btn btn-outline-secondary btn-sm sidebar-section-toggle" data-target="{{ key|lower }}">{{ key|capitalize }}</button>
+            {% endfor %}
+          </div>
+
+          <!-- Conteneur des sections -->
+          <div id="sidebar-sections">
+            <!-- Section "Tous" -->
+            <div class="sidebar-section active" data-key="all">
+              {% for key, items in sections.items() %}
+                {% for it in items %}
+                  <div class="sidebar-section-item">
+                    <a href="{{ url_for('product') }}?path={{ it.path | urlencode }}">
+                      {% if it.image %}
+                        <img src="{{ it.image }}" alt="{{ it.name }}">
+                      {% endif %}
+                      <span class="item-name">{{ it.name }}</span>
+                    </a>
+                  </div>
+                {% endfor %}
+              {% endfor %}
+            </div>
+
+            <!-- Sections par genre -->
+            {% for key, items in sections.items() %}
+              <div class="sidebar-section" data-key="{{ key|lower }}">
+                {% if items %}
+                  {% for it in items %}
+                    <div class="sidebar-section-item">
+                      <a href="{{ url_for('product') }}?path={{ it.path | urlencode }}">
+                        {% if it.image %}
+                          <img src="{{ it.image }}" alt="{{ it.name }}">
+                        {% endif %}
+                        <span class="item-name">{{ it.name }}</span>
+                      </a>
+                    </div>
+                  {% endfor %}
+                {% else %}
+                  <div class="text-muted small p-2">Aucun élément trouvé</div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </aside>
+
+      <!-- MAIN CONTENT - PANIER -->
+      <main class="col-md-9 main-content">
+        <div class="container">
+          <h1 class="mb-4">🛒 Votre Panier</h1>
+          
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+
+          {% if cart %}
+            <!-- Articles du panier -->
+            <div class="row">
+              <div class="col-md-8">
+                {% for item in cart %}
+                  <div class="cart-item">
+                    <div class="row align-items-center">
+                      <div class="col-md-2">
+                        {% if item.product_image %}
+                          <img src="{{ item.product_image }}" alt="{{ item.product_name }}" class="cart-item-image">
+                        {% else %}
+                          <div class="cart-item-image bg-light d-flex align-items-center justify-content-center">
+                            <span class="text-muted">No image</span>
+                          </div>
+                        {% endif %}
+                      </div>
+                      <div class="col-md-6">
+                        <h5 class="mb-1">{{ item.product_name }}</h5>
+                        <p class="mb-1 text-muted">Taille: {{ item.size }}</p>
+                        <p class="mb-1">Quantité: {{ item.qty }}</p>
+                      </div>
+                      <div class="col-md-2">
+                        <strong class="text-primary">{{ "%.2f"|format(item.price) }} €</strong>
+                      </div>
+                      <div class="col-md-2">
+                        <form action="{{ url_for('cart_remove', item_id=item.id) }}" method="POST" class="d-inline">
+                          <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Supprimer cet article ?')">
+                            ❌
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                {% endfor %}
+
+                <!-- Bouton vider le panier -->
+                <div class="mt-3">
+                  <form action="{{ url_for('cart_clear') }}" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-outline-warning" onclick="return confirm('Vider tout le panier ?')">
+                      🗑️ Vider le panier
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              <!-- Résumé et paiement -->
+              <div class="col-md-4">
+                <div class="cart-summary">
+                  <h4 class="mb-3">Résumé</h4>
+                  
+                  <div class="d-flex justify-content-between mb-2">
+                    <span>Sous-total:</span>
+                    <span>{{ "%.2f"|format(total) }} €</span>
+                  </div>
+                  
+                  <div class="d-flex justify-content-between mb-2">
+                    <span>Livraison:</span>
+                    <span class="text-success">Gratuite</span>
+                  </div>
+                  
+                  <hr>
+                  
+                  <div class="d-flex justify-content-between mb-3">
+                    <strong>Total:</strong>
+                    <strong class="text-primary">{{ "%.2f"|format(total) }} €</strong>
+                  </div>
+
+                  <!-- Section Adresse -->
+                  <div class="mb-4">
+                    <h5>📦 Adresse de livraison</h5>
+                    {% if user_address %}
+                      <div class="alert alert-success">
+                        <strong>{{ user_address.full_name }}</strong><br>
+                        {{ user_address.address_line1 }}<br>
+                        {% if user_address.address_line2 %}
+                          {{ user_address.address_line2 }}<br>
+                        {% endif %}
+                        {{ user_address.postal_code }} {{ user_address.city }}<br>
+                        {{ user_address.country }}
+                      </div>
+                      <a href="{{ url_for('manage_address') }}" class="btn btn-outline-primary btn-sm">
+                        Modifier l'adresse
+                      </a>
+                    {% else %}
+                      <div class="alert alert-warning">
+                        <p class="mb-2">Aucune adresse enregistrée</p>
+                        <a href="{{ url_for('manage_address') }}" class="btn btn-primary btn-sm">
+                          📦 Ajouter une adresse
+                        </a>
+                      </div>
+                    {% endif %}
+                  </div>
+
+                  <!-- Bouton Paiement -->
+                  {% if user_address %}
+                    <form action="{{ url_for('create_checkout_session') }}" method="POST">
+                      <button type="submit" class="btn btn-success btn-lg w-100">
+                        💳 Payer {{ "%.2f"|format(total) }} €
+                      </button>
+                    </form>
+                  {% else %}
+                    <div class="alert alert-info">
+                      <small>Veuillez d'abord ajouter une adresse de livraison pour procéder au paiement.</small>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% else %}
+            <!-- Panier vide -->
+            <div class="text-center py-5">
+              <div class="mb-4">
+                <span style="font-size: 4rem;">🛒</span>
+              </div>
+              <h3 class="text-muted">Votre panier est vide</h3>
+              <p class="text-muted mb-4">Découvrez nos produits et ajoutez-les à votre panier !</p>
+              <a href="{{ url_for('home') }}" class="btn btn-primary btn-lg">
+                🏠 Retour à l'accueil
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <footer class="text-center mt-4 py-3 bg-light">
+    Copyright © 2025 - Tropik Shoes
+    <br> 
+    Suiver Nous:
+    <br> 
+      <a href="https://www.instagram.com/tropik.shoes.97?utm_source=ig_web_button_share_sheet&igsh=MWZjbjBhcHZ3enRmeg==" target="_blank" title="Instagram">
+            <img src="{{ url_for('static', filename='instagram.png') }}" alt="Instagram" class="social-icon-img">
+          </a>
+      <a href="https://api.whatsapp.com/message/V6OEAU2ZXJAFD1?autoload=1&app_absent=0" target="_blank" title="WhatsApp">
+            <img src="{{ url_for('static', filename='whatsapp.png') }}" alt="WhatsApp" class="social-icon-img">
+          </a>
+    <br>
+    • Ventes de sneakers à bas prix !
+    <br>
+    • Livraison Gratuite - DOM TOM & France 🚚
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Script pour la sidebar
+    document.addEventListener('DOMContentLoaded', function() {
+      const toggleButtons = document.querySelectorAll('.sidebar-section-toggle');
+      
+      toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // Retirer la classe active de tous les boutons
+          toggleButtons.forEach(btn => btn.classList.remove('active'));
+          // Ajouter la classe active au bouton cliqué
+          this.classList.add('active');
+          
+          const target = this.getAttribute('data-target');
+          const sections = document.querySelectorAll('.sidebar-section');
+          
+          // Afficher/masquer les sections
+          sections.forEach(section => {
+            if (target === 'all' || section.getAttribute('data-key') === target) {
+              section.style.display = 'block';
+            } else {
+              section.style.display = 'none';
+            }
+          });
+        });
+      });
+    });
+  </script>
+</body>
+</html>

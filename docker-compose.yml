@@ -1,0 +1,29 @@
+version: "3.9"
+services:
+
+  mini_shop:
+    build: .
+    container_name: mini_shop_container
+    env_file:
+      - .env
+    expose:
+      - "5000"           # accessible au reverse proxy
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2
+    container_name: caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./cadyy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - mini_shop
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:

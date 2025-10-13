@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Résultats de recherche pour "{{ query }}"</h2>
+<p>{{ results_count }} produit(s) trouvé(s)</p>
+
+{% if results %}
+<div class="row">
+    {% for product in results %}
+    <div class="col-6 col-md-3 mb-3">
+        <div class="card h-100">
+            {% if product.image %}
+            <img src="{{ product.image }}" class="card-img-top" alt="{{ product.name }}" loading="lazy">
+            {% endif %}
+            <div class="card-body">
+                <h6 class="card-title">{{ product.name }}</h6>
+                <p class="card-text">
+                    {% if product.old_price %}
+                    <s class="text-muted">{{ product.old_price }}</s>
+                    {% endif %}
+                    <span class="fw-bold text-primary">{{ product.new_price }}</span>
+                </p>
+                <a class="btn btn-sm btn-primary" href="{{ url_for('product') }}?path={{ product.path | urlencode }}">Voir</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">
+    Aucun produit trouvé pour "{{ query }}"
+</div>
+{% endif %}
+{% endblock %}
